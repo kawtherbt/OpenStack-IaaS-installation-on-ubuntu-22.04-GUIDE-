@@ -19,7 +19,7 @@ Devstack is a series of scripts used to quickly bring up a complete OpenStack en
 
 ---
 
-## OpenNebula Components
+## OpenStack Components
 OpenStack consists of several components, each providing a specific functionality for managing a cloud environment.
 
 - **Horizon**: The web-based dashboard for managing and accessing OpenStack resources.
@@ -32,7 +32,6 @@ OpenStack consists of several components, each providing a specific functionalit
 - **Heat**: The orchestration service that manages infrastructure as code.
 - **Ceilometer**: The telemetry service for monitoring and metering usage statistics.
 
-The OpenNebula Front-end machine needs network connectivity to all hosts and possibly access to the storage Datastores. The base installation takes less than 150 MB.
 
 ---
 
@@ -60,8 +59,6 @@ Assign sudo privileges to the user
 echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
 ```
 ### Step 3: Install git and download DevStack
-Install the required OpenNebula packages:
-
 ```bash
 su - stack
 sudo apt install git -y
