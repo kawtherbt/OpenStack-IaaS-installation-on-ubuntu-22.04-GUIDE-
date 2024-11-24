@@ -91,8 +91,8 @@ HOST_IP=10.208.0.10
 ```
 Save and Exit.
 ## Note:
-- **ADMIN_PASSWORD**: used to login to Openstack login page. Default username is <h5>admin</h5>
-- **HOST_IP**: system’s IP address that is obtained by running ifconfig or ip addr commands
+- **ADMIN_PASSWORD**: used to login to Openstack login page. Default username is __admin__
+- **HOST_IP**: system’s IP address that is obtained by running __ifconfig__ or __ip addr__ commands
 
 ### Step 5: Install OpenStack with Devstack
 run the script below contained in devstack directory:
