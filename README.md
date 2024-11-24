@@ -1,6 +1,6 @@
 <div align="center">
   
-  <h1 align="center">Install OpenNebula on Ubuntu</h1>
+  <h1 align="center">Install OpenStack on Ubuntu 22.04 with DevStack</h1>
 
 </div>
 
@@ -11,23 +11,26 @@ If you have any questions or need further assistance, feel free to reach out:
 - **LinkedIn**: [linkedin.com/in/kawther-benticha](https://www.linkedin.com/in/kawther-benticha/)  
 - **GitHub**: [github.com/kawtherbt](https://github.com/kawtherbt)
 
-## Why OpenNebula?
-OpenNebula combines existing virtualization technologies like KVM and VMware with advanced features for multi-tenancy, automatic provisioning, and elasticity. Its aim is to make cloud management simple. It can be compared with other cloud management platforms like OpenStack and CloudStack.
+## What is OpenStack?
+OpenStack is a free, open standard cloud computing platform. It is mostly deployed as infrastructure-as-a-service in public and private clouds where virtual servers and other resources are available to users.
+
+## Whats is DevStack?
+Devstack is a series of scripts used to quickly bring up a complete OpenStack environment.
 
 ---
 
 ## OpenNebula Components
-OpenNebula has two main components:
-- **OpenNebula Front-end**: The management engine that executes the OpenNebula services.
-- **OpenNebula Hypervisor Nodes**: Hypervisors providing the resources needed by the VMs.
+OpenStack consists of several components, each providing a specific functionality for managing a cloud environment.
 
-### Minimum Recommended Specs for Front-end
-| Resource       | Minimum Recommended Configuration |
-|----------------|------------------------------------|
-| Memory         | 2 GB                              |
-| CPU            | 1 CPU (2 cores)                   |
-| Disk Size      | 100 GB                            |
-| Network        | 2 NICs                            |
+- **Horizon**: The web-based dashboard for managing and accessing OpenStack resources.
+- **Nova**: The compute service that manages virtual machines.
+- **Neutron**: The networking service that handles virtual networks and IP addresses.
+- **Cinder**: The block storage service that provides persistent storage for virtual machines.
+- **Swift**: The object storage service for storing and retrieving large amounts of data.
+- **Keystone**: The identity service for authentication and authorization across OpenStack components.
+- **Glance**: The image service that provides discovery, registration, and delivery services for VM images.
+- **Heat**: The orchestration service that manages infrastructure as code.
+- **Ceilometer**: The telemetry service for monitoring and metering usage statistics.
 
 The OpenNebula Front-end machine needs network connectivity to all hosts and possibly access to the storage Datastores. The base installation takes less than 150 MB.
 
@@ -35,74 +38,75 @@ The OpenNebula Front-end machine needs network connectivity to all hosts and pos
 
 ## Installation Steps
 
-### Step 1: Add OpenNebula and Debian Repositories
-Import the repository key and add the OpenNebula repository:
+### Step 1: Update and Upgrade the System
+To start off, log into your Ubuntu 22.04 system using SSH protocol and update & upgrade system repositories: 
 
 ```bash
-wget -q -O- https://downloads.opennebula.org/repo/repo.key | sudo apt-key add -
-echo "deb https://downloads.opennebula.org/repo/6.1/Ubuntu/20.04 stable opennebula" | sudo tee /etc/apt/sources.list.d/opennebula.list
+apt update -y && apt upgrade -y
 ```
-### Step 2: Install and Configure MySQL Database
-Update the package list and install MariaDB:
-
+Next, you should reboot your system:
 ```bash
-sudo apt update
-sudo apt -y install mariadb-server
-sudo mysql_secure_installation
+sudo reboot
 ```
-
-Create a database and user for OpenNebula:
+### Step 2: Create Stack user and assign sudo priviledge
+Best practice demands that devstack should be run as a regular user with sudo privileges.So, to create a stack user: 
 ```bash
-sudo mysql -u root -p
-CREATE DATABASE opennebula;
-GRANT ALL PRIVILEGES ON opennebula.* TO 'oneadmin' IDENTIFIED BY 'StrongPassword';
-FLUSH PRIVILEGES;
-EXIT;
-
+sudo adduser -s /bin/bash -d /opt/stack -m stack
+sudo chmod +x /opt/stack
 ```
-### Step 3: Install OpenNebula Front-end Packages
+
+Assign sudo privileges to the user
+```bash
+echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
+```
+### Step 3: Install git and download DevStack
 Install the required OpenNebula packages:
 
 ```bash
-sudo apt update
-sudo apt install opennebula opennebula-sunstone opennebula-gate opennebula-flow
+su - stack
+sudo apt install git -y
 
 ```
-### Step 4: Install Ruby Runtime
-Run the following command to install Ruby dependencies:
-
+Clone devstack’s git repository
 ```bash
-sudo /usr/share/one/install_gems
-
+git clone https://git.openstack.org/openstack-dev/devstack
 ```
-### Step 5: Configure OpenNebula DB
-Edit the database configuration in the oned.conf file:
+### Step 4: Create devstack configuration file
+Navigate to the devstack directory:
 ```bash
-sudo vim /etc/one/oned.conf
+cd devstack
 
 ```
-Uncomment the SQLite configuration:
+Then create a local.conf configuration file:
 ```bash
-#DB = [ BACKEND = "sqlite" ]
-
+vim local.conf
 ```
-Replace it with the MySQL configuration:
+Paste the following content:
 ```bash
-DB = [ backend = "mysql",       server = "localhost",       port = 0,       user = "oneadmin",       passwd = "StrongPassword",       db_name = "opennebula" ]
-
+[[local|localrc]]
+# Password for KeyStone, Database, RabbitMQ and Service
+ADMIN_PASSWORD=StrongAdminSecret
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# Host IP - get your Server/VM IP address from ip addr command
+HOST_IP=10.208.0.10
 ```
+Save and Exit.
+## Note:
+- **ADMIN_PASSWORD**: used to login to Openstack login page. Default username is <bold>admin</bold>
+- **HOST_IP**: system’s IP address that is obtained by running ifconfig or ip addr commands
 
-### Step 6: Configure Firewall
-Allow the required ports for OpenNebula's Sunstone interface:
+### Step 5: Install OpenStack with Devstack
+run the script below contained in devstack directory:
 ```bash
-sudo ufw allow proto tcp from any to any port 9869
+./stack.sh
 ```
+The deployment takes about 10 to 15 minutes depending on the speed of your system and internet connection.
 
-### Step 7: Start OpenNebula Services
-```bash
-sudo systemctl start opennebula opennebula-sunstone
-sudo systemctl enable opennebula opennebula-sunstone
-```
+### Step 6: Accessing OpenStack on a web browser
+To access OpenStack via a web browser browse your Ubuntu’s IP address as shown. https://server-ip/dashboard This directs you to a login page 
+
 ---
 <div align="center">
   
@@ -111,21 +115,10 @@ sudo systemctl enable opennebula opennebula-sunstone
 
 </div>
 
-To verify the installation, run the following command as oneadmin:
-```bash
-sudo su - oneadmin -c "oneuser show"
-```
-To access the Sunstone UI, open your browser and navigate to:
-```bash
-http://<your-server-ip>:9869
-```
-- **Username:**  oneadmin
-- **Password:** Found in /var/lib/one/.one/one_auth
- 
  <div align="center">
-   <img src="https://miro.medium.com/v2/resize:fit:720/format:webp/0*eDlMik3QnrclLbu4.png" alt="Logo" width="100%" height="100%">
+   <img src="https://miro.medium.com/v2/resize:fit:640/format:webp/0*ACjue7WCslkHjP4C.png" alt="Logo" width="100%" height="100%">
    <p align="center">Login Page</p>
 
-   <img src="https://miro.medium.com/v2/resize:fit:720/format:webp/0*mwFGkvJB3YvuUAfZ.jpg" alt="Logo" width="100%" height="100%">
+   <img src="https://miro.medium.com/v2/resize:fit:720/format:webp/0*dya1n9DWtYUeCF4E.png" alt="Logo" width="100%" height="100%">
    <p align="center">Dashboard Page</p>
 </div>
