@@ -102,13 +102,13 @@ run the script below contained in devstack directory:
 The deployment takes about 10 to 15 minutes depending on the speed of your system and internet connection.
 
 ### Step 6: Accessing OpenStack on a web browser
-To access OpenStack via a web browser browse your Ubuntu’s IP address as shown. https://server-ip/dashboard This directs you to a login page 
+To access OpenStack via a web browser browse your Ubuntu’s IP address as shown. 
+https://server-ip/dashboard directs you to a login page 
 
 ---
 <div align="center">
   
-  <h2 align="center">Verify the Installation and Access Sunstone UI
-</h2>
+  <h2 align="center">Verify the Installation</h2>
 
 </div>
 
